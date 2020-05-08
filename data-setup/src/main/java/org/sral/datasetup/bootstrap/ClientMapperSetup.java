@@ -1,6 +1,6 @@
-package hamburg.schwartau.datasetup.bootstrap;
+package org.sral.datasetup.bootstrap;
 
-import hamburg.schwartau.HelloWorldMapper;
+import org.sral.RegexMapper;
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.resource.ClientResource;
 import org.keycloak.protocol.oidc.mappers.GroupMembershipMapper;
@@ -41,7 +41,7 @@ public class ClientMapperSetup {
 
     private ProtocolMapperRepresentation createHelloWordMapper() {
         ProtocolMapperRepresentation protocolMapperRepresentation = new ProtocolMapperRepresentation();
-        protocolMapperRepresentation.setProtocolMapper(HelloWorldMapper.PROVIDER_ID);
+        protocolMapperRepresentation.setProtocolMapper(RegexMapper.PROVIDER_ID);
         protocolMapperRepresentation.setProtocol(PROTOCOL);
         protocolMapperRepresentation.setName("Hello world mapper");
         Map<String, String> config = new HashMap<>();

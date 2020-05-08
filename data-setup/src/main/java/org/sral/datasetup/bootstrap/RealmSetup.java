@@ -1,10 +1,11 @@
-package hamburg.schwartau.datasetup.bootstrap;
+package org.sral.datasetup.bootstrap;
 
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.representations.idm.ClientRepresentation;
 import org.keycloak.representations.idm.RealmRepresentation;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 
@@ -39,7 +40,7 @@ public class RealmSetup {
         client.setId(CLIENT);
         client.setName(CLIENT);
         client.setPublicClient(Boolean.TRUE);
-        return Arrays.asList(client);
+        return Collections.singletonList(client);
     }
 
 }

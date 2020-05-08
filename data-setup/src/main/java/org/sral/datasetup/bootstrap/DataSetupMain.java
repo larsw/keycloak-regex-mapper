@@ -1,4 +1,4 @@
-package hamburg.schwartau.datasetup.bootstrap;
+package org.sral.datasetup.bootstrap;
 
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.KeycloakBuilder;

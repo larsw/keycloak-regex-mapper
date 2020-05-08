@@ -1,4 +1,4 @@
-package hamburg.schwartau.datasetup.bootstrap;
+package org.sral.datasetup.bootstrap;
 
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.resource.UsersResource;
@@ -7,6 +7,7 @@ import org.keycloak.representations.idm.UserRepresentation;
 
 import javax.ws.rs.core.Response;
 import java.util.Arrays;
+import java.util.Collections;
 
 public class UserSetup {
 
@@ -29,7 +30,7 @@ public class UserSetup {
         user.setFirstName(firstName);
         user.setLastName(lastName);
         user.setEnabled(true);
-        user.setCredentials(Arrays.asList(createPassword(PASSWORD)));
+        user.setCredentials(Collections.singletonList(createPassword(PASSWORD)));
         Response response = users.create(user);
         return getCreatedId(response);
     }

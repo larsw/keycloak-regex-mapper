@@ -3,9 +3,8 @@
 
     <name>Keycloak</name>
     <modelVersion>4.0.0</modelVersion>
-
-    <artifactId>keycloak-custom-protocol-mapper-example-parent</artifactId>
-    <groupId>hamburg.schwartau</groupId>
+    <artifactId>keycloak-regex-mapper-parent</artifactId>
+    <groupId>org.sral</groupId>
     <version>${revision}</version>
     <packaging>pom</packaging>
 
@@ -14,8 +13,8 @@
         <!-- The version we set here we got from the keycloak pom
         see https://github.com/keycloak/keycloak/blob/master/pom.xml
         -->
-        <resteasy.version>3.5.1.Final</resteasy.version>
-        <keycloak.version>4.5.0.Final</keycloak.version>
+        <resteasy.version>4.5.3.Final</resteasy.version>
+        <keycloak.version>10.0.0</keycloak.version>
         <!-- the version of this build and all depending projects -->
         <revision>1.0.0-SNAPSHOT</revision>
     </properties>
@@ -81,7 +80,7 @@
             <dependency>
                 <groupId>org.jboss.resteasy</groupId>
                 <artifactId>resteasy-jaxrs</artifactId>
-                <version>${resteasy.version}</version>
+                <version>3.5.1.Final</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

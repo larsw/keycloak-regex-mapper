@@ -1,5 +1,6 @@
-package hamburg.schwartau;
+package org.sral;
 
+import org.keycloak.models.ClientSessionContext;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.ProtocolMapperModel;
 import org.keycloak.models.UserSessionModel;
@@ -17,7 +18,7 @@ import java.util.List;
 /*
  * Our own example protocol mapper.
  */
-public class HelloWorldMapper extends AbstractOIDCProtocolMapper implements OIDCAccessTokenMapper, OIDCIDTokenMapper, UserInfoTokenMapper {
+public class RegexMapper extends AbstractOIDCProtocolMapper implements OIDCAccessTokenMapper, OIDCIDTokenMapper, UserInfoTokenMapper {
 
     /*
      * A config which keycloak uses to display a generic dialog to configure the token.
@@ -28,7 +29,7 @@ public class HelloWorldMapper extends AbstractOIDCProtocolMapper implements OIDC
      * The ID of the token mapper. Is public, because we need this id in our data-setup project to
      * configure the protocol mapper in keycloak.
      */
-    public static final String PROVIDER_ID = "oidc-hello-world-mapper";
+    public static final String PROVIDER_ID = "oidc-regex-mapper";
 
     static {
         // The builtin protocol mapper let the user define under which claim name (key)
@@ -41,7 +42,7 @@ public class HelloWorldMapper extends AbstractOIDCProtocolMapper implements OIDC
         // this token mapper implements to decide which options to add to the config. So if this token
         // mapper should never be available for some sort of options, e.g. like the id token, just don't
         // implement the corresponding interface.
-        OIDCAttributeMapperHelper.addIncludeInTokensConfig(configProperties, HelloWorldMapper.class);
+        OIDCAttributeMapperHelper.addIncludeInTokensConfig(configProperties, RegexMapper.class);
     }
 
     @Override
@@ -51,12 +52,12 @@ public class HelloWorldMapper extends AbstractOIDCProtocolMapper implements OIDC
 
     @Override
     public String getDisplayType() {
-        return "Hello World Mapper";
+        return "Regex Mapper";
     }
 
     @Override
     public String getHelpText() {
-        return "Adds a hello world text to the claim";
+        return "Add claim based on a regular expression over a model property";
     }
 
     @Override
@@ -69,14 +70,12 @@ public class HelloWorldMapper extends AbstractOIDCProtocolMapper implements OIDC
         return PROVIDER_ID;
     }
 
-    @Override
-    protected void setClaim(final IDToken token, final ProtocolMapperModel mappingModel, final UserSessionModel userSession, final KeycloakSession keycloakSession) {
+    protected void setClaim(final IDToken token, final ProtocolMapperModel mappingModel, final UserSessionModel userSession, final KeycloakSession keycloakSession, ClientSessionContext clientSessionContext) {
         // adds our data to the token. Uses the parameters like the claim name which were set by the user
         // when this protocol mapper was configured in keycloak. Note that the parameters which can
-        // be configured in keycloak for this protocol mapper were set in the static intializer of this class.
+        // be configured in keycloak for this protocol mapper were set in the static initializer of this class.
         //
         // Sets a static "Hello world" string, but we could write a dynamic value like a group attribute here too.
-        OIDCAttributeMapperHelper.mapClaim(token, mappingModel, "hello world");
+        // OIDCAttributeMapperHelper.mapClaim(token, mappingModel, "hello world");
     }
-
 }

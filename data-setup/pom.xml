@@ -1,8 +1,8 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <parent>
-        <groupId>hamburg.schwartau</groupId>
-        <artifactId>keycloak-custom-protocol-mapper-example-parent</artifactId>
+        <groupId>org.sral</groupId>
+        <artifactId>keycloak-regex-mapper-parent</artifactId>
         <!--suppress MavenPropertyInParent -->
         <version>${revision}</version>
         <relativePath>../pom.xml</relativePath>
@@ -38,8 +38,8 @@
             <artifactId>resteasy-jaxrs</artifactId>
         </dependency>
         <dependency>
-            <groupId>hamburg.schwartau</groupId>
-            <artifactId>keycloak-custom-protocol-mapper-example</artifactId>
+            <groupId>org.sral</groupId>
+            <artifactId>keycloak-regex-mapper</artifactId>
             <version>${revision}</version>
         </dependency>
     </dependencies>
