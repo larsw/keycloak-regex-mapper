@@ -1,4 +1,4 @@
-package org.sral.datasetup.bootstrap;
+package org.sral.mappers.keycloak.datasetup.bootstrap;
 
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.resource.UsersResource;
@@ -6,7 +6,6 @@ import org.keycloak.representations.idm.CredentialRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
 
 import javax.ws.rs.core.Response;
-import java.util.Arrays;
 import java.util.Collections;
 
 public class UserSetup {

@@ -1,4 +1,4 @@
-package org.sral;
+package org.sral.mappers.keycloak;
 
 import org.junit.Test;
 import org.keycloak.common.util.StreamUtil;

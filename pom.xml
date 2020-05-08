@@ -1,7 +1,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
-    <name>Keycloak</name>
+    <name>Keycloak plugins</name>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>keycloak-regex-mapper-parent</artifactId>
     <groupId>org.sral</groupId>
@@ -14,7 +14,7 @@
         see https://github.com/keycloak/keycloak/blob/master/pom.xml
         -->
         <resteasy.version>4.5.3.Final</resteasy.version>
-        <keycloak.version>10.0.0</keycloak.version>
+        <keycloak.version>10.0.1</keycloak.version>
         <!-- the version of this build and all depending projects -->
         <revision>1.0.0-SNAPSHOT</revision>
     </properties>
@@ -29,6 +29,13 @@
                     <configuration>
                         <source>1.8</source>
                         <target>1.8</target>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.wildfly.plugins</groupId>
+                    <artifactId>wildfly-maven-plugin</artifactId>
+                    <configuration>
+                        <skip>false</skip>
                     </configuration>
                 </plugin>
             </plugins>

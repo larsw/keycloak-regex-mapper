@@ -1,4 +1,4 @@
-package org.sral;
+package org.sral.mappers.keycloak;
 
 import org.keycloak.models.ClientSessionContext;
 import org.keycloak.models.KeycloakSession;

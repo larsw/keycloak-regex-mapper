@@ -1,4 +1,4 @@
-package org.sral.datasetup.bootstrap;
+package org.sral.mappers.keycloak.datasetup.bootstrap;
 
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.KeycloakBuilder;

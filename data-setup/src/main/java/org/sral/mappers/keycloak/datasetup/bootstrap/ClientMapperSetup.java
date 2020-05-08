@@ -1,6 +1,6 @@
-package org.sral.datasetup.bootstrap;
+package org.sral.mappers.keycloak.datasetup.bootstrap;
 
-import org.sral.RegexMapper;
+import org.sral.mappers.keycloak.RegexMapper;
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.resource.ClientResource;
 import org.keycloak.protocol.oidc.mappers.GroupMembershipMapper;
