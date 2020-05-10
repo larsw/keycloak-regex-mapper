@@ -4,6 +4,7 @@ import org.keycloak.models.ClientSessionContext;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.ProtocolMapperModel;
 import org.keycloak.models.UserSessionModel;
+import org.keycloak.models.utils.ModelToRepresentation;
 import org.keycloak.protocol.oidc.mappers.AbstractOIDCProtocolMapper;
 import org.keycloak.protocol.oidc.mappers.OIDCAccessTokenMapper;
 import org.keycloak.protocol.oidc.mappers.OIDCAttributeMapperHelper;
@@ -14,6 +15,9 @@ import org.keycloak.representations.IDToken;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /*
  * Our own example protocol mapper.
@@ -32,16 +36,32 @@ public class RegexMapper extends AbstractOIDCProtocolMapper implements OIDCAcces
     public static final String PROVIDER_ID = "oidc-regex-mapper";
 
     static {
-        // The builtin protocol mapper let the user define under which claim name (key)
-        // the protocol mapper writes its value. To display this option in the generic dialog
-        // in keycloak, execute the following method.
         OIDCAttributeMapperHelper.addTokenClaimNameConfig(configProperties);
-        // The builtin protocol mapper let the user define for which tokens the protocol mapper
-        // is executed (access token, id token, user info). To add the config options for the different types
-        // to the dialog execute the following method. Note that the following method uses the interfaces
-        // this token mapper implements to decide which options to add to the config. So if this token
-        // mapper should never be available for some sort of options, e.g. like the id token, just don't
-        // implement the corresponding interface.
+
+        ProviderConfigProperty fullGroupNameProperty = new ProviderConfigProperty();
+        fullGroupNameProperty.setName("full.path");
+        fullGroupNameProperty.setLabel("Full group path");
+        fullGroupNameProperty.setType(ProviderConfigProperty.BOOLEAN_TYPE);
+        fullGroupNameProperty.setDefaultValue("true");
+        fullGroupNameProperty.setHelpText("Include full path to group i.e. /top/level1/level2, false will just specify the group name");
+        configProperties.add(fullGroupNameProperty);
+
+        ProviderConfigProperty patternProperty = new ProviderConfigProperty();
+        patternProperty.setName("regex.pattern");
+        patternProperty.setLabel("Regex pattern");
+        patternProperty.setType(ProviderConfigProperty.STRING_TYPE);
+        patternProperty.setDefaultValue("(.*)");
+        patternProperty.setHelpText("Regular expression with one or more groups");
+        configProperties.add(patternProperty);
+
+        ProviderConfigProperty matchGroupNumberOrNameProperty = new ProviderConfigProperty();
+        matchGroupNumberOrNameProperty.setName("match.group.number.or.name");
+        matchGroupNumberOrNameProperty.setLabel("Match group number/name");
+        matchGroupNumberOrNameProperty.setType(ProviderConfigProperty.STRING_TYPE);
+        matchGroupNumberOrNameProperty.setDefaultValue("1");
+        configProperties.add(matchGroupNumberOrNameProperty);
+
+
         OIDCAttributeMapperHelper.addIncludeInTokensConfig(configProperties, RegexMapper.class);
     }
 
@@ -70,12 +90,50 @@ public class RegexMapper extends AbstractOIDCProtocolMapper implements OIDCAcces
         return PROVIDER_ID;
     }
 
-    protected void setClaim(final IDToken token, final ProtocolMapperModel mappingModel, final UserSessionModel userSession, final KeycloakSession keycloakSession, ClientSessionContext clientSessionContext) {
-        // adds our data to the token. Uses the parameters like the claim name which were set by the user
-        // when this protocol mapper was configured in keycloak. Note that the parameters which can
-        // be configured in keycloak for this protocol mapper were set in the static initializer of this class.
-        //
-        // Sets a static "Hello world" string, but we could write a dynamic value like a group attribute here too.
-        // OIDCAttributeMapperHelper.mapClaim(token, mappingModel, "hello world");
+    public static boolean useFullPath(ProtocolMapperModel mappingModel) {
+        return "true".equals(mappingModel.getConfig().get("full.path"));
+    }
+
+    protected void setClaim(final IDToken token,
+                            final ProtocolMapperModel mappingModel,
+                            final UserSessionModel userSession,
+                            final KeycloakSession keycloakSession,
+                            ClientSessionContext clientSessionContext) {
+        var regexPattern = mappingModel.getConfig().get("regex.pattern");
+
+        var groupNumberOrName = mappingModel.getConfig().get("match.group.number.or.name");
+        var groupNumber = -1;
+        var groupName = "";
+        try {
+            groupNumber = Integer.parseInt(groupNumberOrName);
+        } catch (NumberFormatException ignored) {
+            groupName = groupNumberOrName;
+        }
+
+        var pattern = Pattern.compile(regexPattern);
+
+        boolean fullPath = useFullPath(mappingModel);
+
+        int finalGroupNumber = groupNumber;
+        String finalGroupName = groupName;
+        var memberships = userSession.getUser()
+                .getGroups()
+                .stream()
+                .map(x -> fullPath ? pattern.matcher(ModelToRepresentation.buildGroupPath(x)) : pattern.matcher(x.getName()))
+                .filter(Matcher::matches)
+                .map(x -> {
+                    String value;
+                    if (finalGroupNumber == -1) {
+                        value = x.group(finalGroupName);
+                    } else {
+                        value = x.group(finalGroupNumber);
+                    }
+                    return value;
+                })
+                .distinct()
+                .collect(Collectors.toList());
+
+        String protocolClaim = mappingModel.getConfig().get(OIDCAttributeMapperHelper.TOKEN_CLAIM_NAME);
+        token.getOtherClaims().put(protocolClaim, memberships);
     }
 }
