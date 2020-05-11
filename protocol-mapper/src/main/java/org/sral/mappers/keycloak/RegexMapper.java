@@ -19,50 +19,57 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import static java.util.Arrays.asList;
+
 /*
  * Our own example protocol mapper.
  */
 public class RegexMapper extends AbstractOIDCProtocolMapper implements OIDCAccessTokenMapper, OIDCIDTokenMapper, UserInfoTokenMapper {
 
-    /*
-     * A config which keycloak uses to display a generic dialog to configure the token.
-     */
     private static final List<ProviderConfigProperty> configProperties = new ArrayList<>();
 
-    /*
-     * The ID of the token mapper. Is public, because we need this id in our data-setup project to
-     * configure the protocol mapper in keycloak.
-     */
     public static final String PROVIDER_ID = "oidc-regex-mapper";
+    public static final String TARGET_PROPERTY = "target";
+    public static final String FULL_PATH_PROPERTY = "full.path";
+    public static final String REGEX_PATTERN_PROPERTY = "regex.pattern";
+    public static final String MATCH_GROUP_NUMBER_OR_NAME_PROPERTY = "match.group.number.or.name";
 
     static {
         OIDCAttributeMapperHelper.addTokenClaimNameConfig(configProperties);
+        OIDCAttributeMapperHelper.addIncludeInTokensConfig(configProperties, RegexMapper.class);
 
-        ProviderConfigProperty fullGroupNameProperty = new ProviderConfigProperty();
-        fullGroupNameProperty.setName("full.path");
+        var targetProperty = new ProviderConfigProperty();
+        targetProperty.setName(TARGET_PROPERTY);
+        targetProperty.setLabel("Match target");
+        targetProperty.setHelpText("TODO");
+        targetProperty.setType(ProviderConfigProperty.LIST_TYPE);
+        targetProperty.setOptions(asList("Groups", "Roles", "User attributes"));
+        targetProperty.setDefaultValue("Groups");
+        configProperties.add(targetProperty);
+
+        var fullGroupNameProperty = new ProviderConfigProperty();
+        fullGroupNameProperty.setName(FULL_PATH_PROPERTY);
         fullGroupNameProperty.setLabel("Full group path");
         fullGroupNameProperty.setType(ProviderConfigProperty.BOOLEAN_TYPE);
         fullGroupNameProperty.setDefaultValue("true");
         fullGroupNameProperty.setHelpText("Include full path to group i.e. /top/level1/level2, false will just specify the group name");
         configProperties.add(fullGroupNameProperty);
 
-        ProviderConfigProperty patternProperty = new ProviderConfigProperty();
-        patternProperty.setName("regex.pattern");
+        var patternProperty = new ProviderConfigProperty();
+        patternProperty.setName(REGEX_PATTERN_PROPERTY);
         patternProperty.setLabel("Regex pattern");
         patternProperty.setType(ProviderConfigProperty.STRING_TYPE);
         patternProperty.setDefaultValue("(.*)");
         patternProperty.setHelpText("Regular expression with one or more groups");
         configProperties.add(patternProperty);
 
-        ProviderConfigProperty matchGroupNumberOrNameProperty = new ProviderConfigProperty();
-        matchGroupNumberOrNameProperty.setName("match.group.number.or.name");
+        var matchGroupNumberOrNameProperty = new ProviderConfigProperty();
+        matchGroupNumberOrNameProperty.setName(MATCH_GROUP_NUMBER_OR_NAME_PROPERTY);
         matchGroupNumberOrNameProperty.setLabel("Match group number/name");
         matchGroupNumberOrNameProperty.setType(ProviderConfigProperty.STRING_TYPE);
         matchGroupNumberOrNameProperty.setDefaultValue("1");
         configProperties.add(matchGroupNumberOrNameProperty);
 
-
-        OIDCAttributeMapperHelper.addIncludeInTokensConfig(configProperties, RegexMapper.class);
     }
 
     @Override
@@ -72,12 +79,12 @@ public class RegexMapper extends AbstractOIDCProtocolMapper implements OIDCAcces
 
     @Override
     public String getDisplayType() {
-        return "Regex Mapper";
+        return "Regular Expression Mapper";
     }
 
     @Override
     public String getHelpText() {
-        return "Add claim based on a regular expression over a model property";
+        return "Add claim based on a regular expression over model properties";
     }
 
     @Override
@@ -91,17 +98,17 @@ public class RegexMapper extends AbstractOIDCProtocolMapper implements OIDCAcces
     }
 
     public static boolean useFullPath(ProtocolMapperModel mappingModel) {
-        return "true".equals(mappingModel.getConfig().get("full.path"));
+        return "true".equals(mappingModel.getConfig().get(FULL_PATH_PROPERTY));
     }
 
     protected void setClaim(final IDToken token,
                             final ProtocolMapperModel mappingModel,
                             final UserSessionModel userSession,
                             final KeycloakSession keycloakSession,
-                            ClientSessionContext clientSessionContext) {
+                            final ClientSessionContext clientSessionContext) {
         var regexPattern = mappingModel.getConfig().get("regex.pattern");
 
-        var groupNumberOrName = mappingModel.getConfig().get("match.group.number.or.name");
+        var groupNumberOrName = mappingModel.getConfig().get(MATCH_GROUP_NUMBER_OR_NAME_PROPERTY);
         var groupNumber = -1;
         var groupName = "";
         try {
@@ -116,7 +123,7 @@ public class RegexMapper extends AbstractOIDCProtocolMapper implements OIDCAcces
 
         int finalGroupNumber = groupNumber;
         String finalGroupName = groupName;
-        var memberships = userSession.getUser()
+        var values = userSession.getUser()
                 .getGroups()
                 .stream()
                 .map(x -> fullPath ? pattern.matcher(ModelToRepresentation.buildGroupPath(x)) : pattern.matcher(x.getName()))
@@ -134,6 +141,6 @@ public class RegexMapper extends AbstractOIDCProtocolMapper implements OIDCAcces
                 .collect(Collectors.toList());
 
         String protocolClaim = mappingModel.getConfig().get(OIDCAttributeMapperHelper.TOKEN_CLAIM_NAME);
-        token.getOtherClaims().put(protocolClaim, memberships);
+        token.getOtherClaims().put(protocolClaim, values);
     }
 }

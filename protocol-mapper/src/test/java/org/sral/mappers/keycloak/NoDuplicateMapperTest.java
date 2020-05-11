@@ -1,7 +1,6 @@
 package org.sral.mappers.keycloak;
 
 import org.junit.Test;
-import org.keycloak.common.util.StreamUtil;
 import org.keycloak.protocol.ProtocolMapper;
 import org.keycloak.provider.ProviderFactory;
 
@@ -17,7 +16,10 @@ public class NoDuplicateMapperTest {
     @Test
     public void shouldNotHaveMappersWithDuplicateIds() {
         final ServiceLoader<ProtocolMapper> serviceLoader = ServiceLoader.load(ProtocolMapper.class);
-        final Collection<String> mapperIds = StreamSupport.stream(serviceLoader.spliterator(), false).map(ProviderFactory::getId).collect(Collectors.toList());
+        final Collection<String> mapperIds = StreamSupport
+                                                .stream(serviceLoader.spliterator(), false)
+                                                .map(ProviderFactory::getId)
+                                                .collect(Collectors.toList());
 
         assertThat(mapperIds).doesNotHaveDuplicates();
     }
