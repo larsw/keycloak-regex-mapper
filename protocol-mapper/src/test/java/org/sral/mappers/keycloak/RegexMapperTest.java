@@ -52,13 +52,14 @@ public class RegexMapperTest {
         assertThat(configPropertyNames)
                 .containsExactly(
                         OIDCAttributeMapperHelper.TOKEN_CLAIM_NAME,
-                        OIDCAttributeMapperHelper.INCLUDE_IN_ID_TOKEN,
-                        OIDCAttributeMapperHelper.INCLUDE_IN_ACCESS_TOKEN,
-                        OIDCAttributeMapperHelper.INCLUDE_IN_USERINFO,
                         RegexMapper.TARGET_PROPERTY,
                         RegexMapper.FULL_PATH_PROPERTY,
                         RegexMapper.REGEX_PATTERN_PROPERTY,
-                        RegexMapper.MATCH_GROUP_NUMBER_OR_NAME_PROPERTY);
+                        RegexMapper.MATCH_GROUP_NUMBER_OR_NAME_PROPERTY,
+                        RegexMapper.MERGE_CLAIMS_PROPERTY,
+                        OIDCAttributeMapperHelper.INCLUDE_IN_ID_TOKEN,
+                        OIDCAttributeMapperHelper.INCLUDE_IN_ACCESS_TOKEN,
+                        OIDCAttributeMapperHelper.INCLUDE_IN_USERINFO);
     }
 
     @Test

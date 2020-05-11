@@ -29,6 +29,8 @@ public class RegexMapper extends AbstractOIDCProtocolMapper implements OIDCAcces
     private static final List<ProviderConfigProperty> configProperties = new ArrayList<>();
 
     public static final String PROVIDER_ID = "oidc-regex-mapper";
+
+    public static final String MERGE_CLAIMS_PROPERTY = "merge.claims";
     public static final String TARGET_PROPERTY = "target";
     public static final String FULL_PATH_PROPERTY = "full.path";
     public static final String REGEX_PATTERN_PROPERTY = "regex.pattern";
@@ -36,7 +38,6 @@ public class RegexMapper extends AbstractOIDCProtocolMapper implements OIDCAcces
 
     static {
         OIDCAttributeMapperHelper.addTokenClaimNameConfig(configProperties);
-        OIDCAttributeMapperHelper.addIncludeInTokensConfig(configProperties, RegexMapper.class);
 
         var targetProperty = new ProviderConfigProperty();
         targetProperty.setName(TARGET_PROPERTY);
@@ -70,11 +71,21 @@ public class RegexMapper extends AbstractOIDCProtocolMapper implements OIDCAcces
         matchGroupNumberOrNameProperty.setDefaultValue("1");
         configProperties.add(matchGroupNumberOrNameProperty);
 
+        var mergeClaimsProperty = new ProviderConfigProperty();
+        mergeClaimsProperty.setName(MERGE_CLAIMS_PROPERTY);
+        mergeClaimsProperty.setLabel("Merge claims");
+        mergeClaimsProperty.setHelpText("If the claim already exists, merge the new values into it");
+        mergeClaimsProperty.setDefaultValue("false");
+        mergeClaimsProperty.setType(ProviderConfigProperty.BOOLEAN_TYPE);
+        configProperties.add(mergeClaimsProperty);
+
+        // Add toggles for include in (ID Token, access token and User Info endpoint
+        OIDCAttributeMapperHelper.addIncludeInTokensConfig(configProperties, RegexMapper.class);
     }
 
     @Override
     public String getDisplayCategory() {
-        return "Token mapper";
+        return TOKEN_MAPPER_CATEGORY;
     }
 
     @Override
@@ -89,6 +100,7 @@ public class RegexMapper extends AbstractOIDCProtocolMapper implements OIDCAcces
 
     @Override
     public List<ProviderConfigProperty> getConfigProperties() {
+
         return configProperties;
     }
 
@@ -108,39 +120,41 @@ public class RegexMapper extends AbstractOIDCProtocolMapper implements OIDCAcces
                             final ClientSessionContext clientSessionContext) {
         var regexPattern = mappingModel.getConfig().get("regex.pattern");
 
-        var groupNumberOrName = mappingModel.getConfig().get(MATCH_GROUP_NUMBER_OR_NAME_PROPERTY);
-        var groupNumber = -1;
-        var groupName = "";
+        var matchGroupNumberOrName = mappingModel.getConfig().get(MATCH_GROUP_NUMBER_OR_NAME_PROPERTY);
+        var matchGroupNumber = -1;
+        var matchGroupName = "";
         try {
-            groupNumber = Integer.parseInt(groupNumberOrName);
+            matchGroupNumber = Integer.parseInt(matchGroupNumberOrName);
         } catch (NumberFormatException ignored) {
-            groupName = groupNumberOrName;
+            matchGroupName = matchGroupNumberOrName;
         }
 
         var pattern = Pattern.compile(regexPattern);
 
+        var values = getFilteredGroupMembershipsAsValues(mappingModel, userSession, matchGroupNumber, matchGroupName, pattern);
+
+        var protocolClaim = mappingModel.getConfig().get(OIDCAttributeMapperHelper.TOKEN_CLAIM_NAME);
+        token.getOtherClaims().put(protocolClaim, values);
+    }
+
+    private List<String> getFilteredGroupMembershipsAsValues(ProtocolMapperModel mappingModel, UserSessionModel userSession, int matchGroupNumber, String matchGroupName, Pattern pattern) {
         boolean fullPath = useFullPath(mappingModel);
 
-        int finalGroupNumber = groupNumber;
-        String finalGroupName = groupName;
-        var values = userSession.getUser()
+        return userSession.getUser()
                 .getGroups()
                 .stream()
                 .map(x -> fullPath ? pattern.matcher(ModelToRepresentation.buildGroupPath(x)) : pattern.matcher(x.getName()))
                 .filter(Matcher::matches)
                 .map(x -> {
                     String value;
-                    if (finalGroupNumber == -1) {
-                        value = x.group(finalGroupName);
+                    if (matchGroupNumber == -1) {
+                        value = x.group(matchGroupName);
                     } else {
-                        value = x.group(finalGroupNumber);
+                        value = x.group(matchGroupNumber);
                     }
                     return value;
                 })
                 .distinct()
                 .collect(Collectors.toList());
-
-        String protocolClaim = mappingModel.getConfig().get(OIDCAttributeMapperHelper.TOKEN_CLAIM_NAME);
-        token.getOtherClaims().put(protocolClaim, values);
     }
 }
