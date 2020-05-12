@@ -1,13 +1,8 @@
-# Keycloak custom protocol mapper example / customize JWT tokens
+# Keycloak regular expression protocol mappers
 
-Per default [Keycloak](https://www.keycloak.org/) writes a lot of things into the [JWT tokens](https://tools.ietf.org/html/rfc7519),
-e.g. the preferred username. If that is not enough, a lot of 
-additional built in protocol mappers can be added to customize 
-the [JWT token](https://tools.ietf.org/html/rfc7519) created by [Keycloak](https://www.keycloak.org/) even further. They can be added in the client
-section via the mappers tab (see the [documentation](https://www.keycloak.org/docs/latest/server_admin/index.html#_protocol-mappers)). But sometimes the build in protocol mappers 
-are not enough. If this is the case, an own protocol mapper can be
-added to [Keycloak](https://www.keycloak.org/) via an (not yet) official [service provider API](https://www.baeldung.com/java-spi). This project 
-shows how this can be done.
+* [JWT token](https://tools.ietf.org/html/rfc7519)
+* [Keycloak](https://www.keycloak.org/)
+TODO Introduction
 
 ## Entrypoints into this project
 1. [data-setup](data-setup): Project to configure [Keycloak](https://www.keycloak.org/) via its REST API. Configures a realm so that it uses the example protocol mapper. Contains a [main method](data-setup/src/main/java/hamburg/schwartau/datasetup/bootstrap/DataSetupMain.java) which can be executed against a running [Keycloak](https://www.keycloak.org/) instance.
@@ -18,7 +13,7 @@ shows how this can be done.
 
 To try it out do the following things:
 
-### Konfiguration of keycloak
+### Configuration of keycloak
 1. Build the project `mvn clean install`
 2. If you have already started this project, execute `docker-compose down` so
 that the volumes and so on are destroyed. Otherwise the old keycloak in memory
@@ -105,12 +100,7 @@ The value auf our own [Hello World Token mapper](protocol-mapper/src/main/java/h
 the message 'hello world' appears in the example.message field.
 
 ## Acknowledgements
-- Examples for [Keycloak](https://www.keycloak.org/): https://github.com/keycloak/keycloak/tree/master/examples 
-- Copied the idea to customize [Keycloak](https://www.keycloak.org/) via XSLT from [this project](https://github.com/arielcarrera/keycloak-docker-oracle)
-- I got the idea for how to add a custom protocol mapper to [Keycloak](https://www.keycloak.org/) from this [jboss mailing list entry](http://lists.jboss.org/pipermail/keycloak-user/2016-February/004891.html)
+- TODO link to original example repository goes here
 
-## Links
-- To use keycloak with an angular app, I found this example app to be helpful: https://github.com/manfredsteyer/angular-oauth2-oidc 
-- Login Page for the users: Login Url: [http://localhost:11080/auth/realms/example-realm/account](http://localhost:11080/auth/realms/example-realm/account)
 
 
