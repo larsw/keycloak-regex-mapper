@@ -1,5 +1,6 @@
 package org.sral.mappers.keycloak;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import org.keycloak.models.ClientSessionContext;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.ProtocolMapperModel;
@@ -11,10 +12,15 @@ import org.keycloak.protocol.oidc.mappers.OIDCAttributeMapperHelper;
 import org.keycloak.protocol.oidc.mappers.OIDCIDTokenMapper;
 import org.keycloak.protocol.oidc.mappers.UserInfoTokenMapper;
 import org.keycloak.provider.ProviderConfigProperty;
+import org.keycloak.representations.AccessToken;
 import org.keycloak.representations.IDToken;
+import org.keycloak.util.JsonSerialization;
 
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -80,16 +86,15 @@ public class RegexReplaceMapper extends AbstractOIDCProtocolMapper implements OI
         return PROVIDER_ID;
     }
 
-    protected void setClaim(final IDToken token,
-                            final ProtocolMapperModel mappingModel,
-                            final UserSessionModel userSession,
-                            final KeycloakSession keycloakSession,
-                            final ClientSessionContext clientSessionContext) {
-
+    @Override
+    public AccessToken transformAccessToken(AccessToken token, ProtocolMapperModel mappingModel, KeycloakSession session, UserSessionModel userSession, ClientSessionContext clientSessionCtx) {
         // Split on comma and trim -> list of target claims
-        var targetClaims = Arrays.asList(mapperModel.getConfig().get(TARGET_CLAIMS_PROPERTY).split(",[ ]*"));
-        var replacementMap = mapperModel.getConfigMap(REPLACEMENT_MAP_PROPERTY);
-        
+        var targetClaims = mappingModel.getConfig().get(TARGET_CLAIMS_PROPERTY).split(",[ ]*");
+
+        var replacementMap = getConfigMap(mappingModel.getConfig(), REPLACEMENT_MAP_PROPERTY);
+
+        Map.of token.getOtherClaims()
+
         for (var target : targetClaims) {
 
             // TODO get claim value
@@ -97,7 +102,7 @@ public class RegexReplaceMapper extends AbstractOIDCProtocolMapper implements OI
 
             // TODO if claim type is not string - ignore (for now)
 
-            string claimValue = null;
+            String claimValue = null;
 
             if (claim instanceof string) {
                 claimValue = (String)claim;
@@ -111,6 +116,60 @@ public class RegexReplaceMapper extends AbstractOIDCProtocolMapper implements OI
             }
 
             // TODO set claim value
+        }
+
+    }
+
+    @Override
+    public AccessToken transformUserInfoToken(AccessToken token, ProtocolMapperModel mappingModel, KeycloakSession session, UserSessionModel userSession, ClientSessionContext clientSessionCtx) {
+        return transformAccessToken(token, mappingModel, session, userSession, clientSessionCtx);
+    }
+
+    @Override
+    public IDToken transformIDToken(IDToken token, ProtocolMapperModel mappingModel, KeycloakSession session, UserSessionModel userSession, ClientSessionContext clientSessionCtx) {
+        return super.transformIDToken(token, mappingModel, session, userSession, clientSessionCtx);
+    }
+
+    protected void setClaim(final IDToken token,
+                            final ProtocolMapperModel mappingModel,
+                            final UserSessionModel userSession,
+                            final KeycloakSession keycloakSession,
+                            final ClientSessionContext clientSessionContext) {
+
+    }
+
+    private Map<String, String> getConfigMap(final Map<String, String> config, String configKey) {
+        String configMap = config.get(configKey);
+
+        try {
+            List<StringPair> map = JsonSerialization.readValue(configMap, MAP_TYPE_REPRESENTATION);
+            return map.stream().collect(Collectors.toMap(StringPair::getKey, StringPair::getValue));
+        } catch (IOException e) {
+            throw new RuntimeException("Could not deserialize json: " + configMap, e);
+        }
+    }
+
+    private static final TypeReference<List<StringPair>> MAP_TYPE_REPRESENTATION = new TypeReference<List<StringPair>>() {
+    };
+
+    static class StringPair {
+        private String key;
+        private String value;
+
+        public String getKey() {
+            return key;
+        }
+
+        public void setKey(String key) {
+            this.key = key;
+        }
+
+        public String getValue() {
+            return value;
+        }
+
+        public void setValue(String value) {
+            this.value = value;
         }
     }
 }
