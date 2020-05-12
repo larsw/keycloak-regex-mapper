@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 import static java.util.Arrays.asList;
 
 /*
- * Our own example protocol mapper.
+ *  @author <a href="mailto:lars@nospam.sral.org">Lars Wilhelmsen</a>
  */
 public class RegexMapper extends AbstractOIDCProtocolMapper implements OIDCAccessTokenMapper, OIDCIDTokenMapper, UserInfoTokenMapper {
 
