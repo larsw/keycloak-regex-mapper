@@ -1,10 +1,9 @@
 package org.sral.mappers.keycloak;
 
-import org.keycloak.models.ClientSessionContext;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.ProtocolMapperModel;
-import org.keycloak.models.UserSessionModel;
+import org.keycloak.models.*;
 import org.keycloak.models.utils.ModelToRepresentation;
+import org.keycloak.protocol.ProtocolMapper;
+import org.keycloak.protocol.ProtocolMapperConfigException;
 import org.keycloak.protocol.oidc.mappers.AbstractOIDCProtocolMapper;
 import org.keycloak.protocol.oidc.mappers.OIDCAccessTokenMapper;
 import org.keycloak.protocol.oidc.mappers.OIDCAttributeMapperHelper;
@@ -42,15 +41,15 @@ public class RegexMapper extends AbstractOIDCProtocolMapper implements OIDCAcces
         var targetProperty = new ProviderConfigProperty();
         targetProperty.setName(TARGET_PROPERTY);
         targetProperty.setLabel("Match target");
-        targetProperty.setHelpText("TODO");
+        targetProperty.setHelpText("Only Groups supported at the moment.");
         targetProperty.setType(ProviderConfigProperty.LIST_TYPE);
-        targetProperty.setOptions(asList("Groups", "Roles", "User attributes"));
+        targetProperty.setOptions(asList("Groups")); // TODO , "Roles", "User attributes"));
         targetProperty.setDefaultValue("Groups");
         configProperties.add(targetProperty);
 
         var fullGroupNameProperty = new ProviderConfigProperty();
         fullGroupNameProperty.setName(FULL_PATH_PROPERTY);
-        fullGroupNameProperty.setLabel("Full group path");
+        fullGroupNameProperty.setLabel("Match against full group path or not");
         fullGroupNameProperty.setType(ProviderConfigProperty.BOOLEAN_TYPE);
         fullGroupNameProperty.setDefaultValue("true");
         fullGroupNameProperty.setHelpText("Include full path to group i.e. /top/level1/level2, false will just specify the group name");
@@ -109,18 +108,48 @@ public class RegexMapper extends AbstractOIDCProtocolMapper implements OIDCAcces
         return PROVIDER_ID;
     }
 
-    public static boolean useFullPath(ProtocolMapperModel mappingModel) {
-        return "true".equals(mappingModel.getConfig().get(FULL_PATH_PROPERTY));
+    public static boolean useFullPath(ProtocolMapperModel mapperModel) {
+        return "true".equals(mapperModel.getConfig().get(FULL_PATH_PROPERTY));
+    }
+
+    public static boolean mergeClaimValues(ProtocolMapperModel mapperModel) {
+        return "true".equals(mapperModel.getConfig().get(MERGE_CLAIMS_PROPERTY));
+    }
+
+    @Override
+    public void validateConfig(final KeycloakSession session,
+                               final RealmModel realm,
+                               final ProtocolMapperContainerModel client,
+                               final ProtocolMapperModel mapperModel) throws ProtocolMapperConfigException {
+        try {
+            // Ensure that it is possible to construct the regex pattern without exception.
+            var pattern = constructPattern(mapperModel);
+
+        } catch (Exception ex) {
+            throw new ProtocolMapperConfigException("Invalid regular expression pattern", "{0}", ex);
+        }
+
+        var matchGroupNumberOrName = mapperModel.getConfig().get(MATCH_GROUP_NUMBER_OR_NAME_PROPERTY);
+        if (matchGroupNumberOrName == null || matchGroupNumberOrName.isEmpty())
+            throw new ProtocolMapperConfigException("Match group number or name is not defined", "{0}");
+    }
+
+    private Pattern constructPattern(ProtocolMapperModel mappingModel) {
+        var regexPattern = mappingModel.getConfig().get(REGEX_PATTERN_PROPERTY);
+        return Pattern.compile(regexPattern);
     }
 
     protected void setClaim(final IDToken token,
-                            final ProtocolMapperModel mappingModel,
+                            final ProtocolMapperModel mapperModel,
                             final UserSessionModel userSession,
                             final KeycloakSession keycloakSession,
                             final ClientSessionContext clientSessionContext) {
-        var regexPattern = mappingModel.getConfig().get("regex.pattern");
 
-        var matchGroupNumberOrName = mappingModel.getConfig().get(MATCH_GROUP_NUMBER_OR_NAME_PROPERTY);
+        var targetClaimName = mapperModel.getConfig().get(OIDCAttributeMapperHelper.TOKEN_CLAIM_NAME);
+
+        var pattern = constructPattern(mapperModel);
+
+        var matchGroupNumberOrName = mapperModel.getConfig().get(MATCH_GROUP_NUMBER_OR_NAME_PROPERTY);
         var matchGroupNumber = -1;
         var matchGroupName = "";
         try {
@@ -129,12 +158,22 @@ public class RegexMapper extends AbstractOIDCProtocolMapper implements OIDCAcces
             matchGroupName = matchGroupNumberOrName;
         }
 
-        var pattern = Pattern.compile(regexPattern);
+        var values = getFilteredGroupMembershipsAsValues(mapperModel, userSession, matchGroupNumber, matchGroupName, pattern);
 
-        var values = getFilteredGroupMembershipsAsValues(mappingModel, userSession, matchGroupNumber, matchGroupName, pattern);
+        if (mergeClaimValues(mapperModel)) {
+            var existingClaim = token.getOtherClaims().get(targetClaimName);
+            if (existingClaim != null) {
+                if (existingClaim instanceof String) {
+                    values.add((String)existingClaim);
+                } else if (existingClaim instanceof List<?>) {
+                    values.addAll((List<String>)existingClaim);
+                } else {
+                    // wut
+                }
+            }
+        }
 
-        var protocolClaim = mappingModel.getConfig().get(OIDCAttributeMapperHelper.TOKEN_CLAIM_NAME);
-        token.getOtherClaims().put(protocolClaim, values);
+        token.getOtherClaims().put(targetClaimName, values);
     }
 
     private List<String> getFilteredGroupMembershipsAsValues(ProtocolMapperModel mappingModel, UserSessionModel userSession, int matchGroupNumber, String matchGroupName, Pattern pattern) {

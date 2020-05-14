@@ -6,31 +6,19 @@
 
     <parent>
         <groupId>org.sral</groupId>
-        <artifactId>keycloak-regex-mapper-parent</artifactId>
+        <artifactId>keycloak-regex-mappers-parent</artifactId>
         <!--suppress MavenPropertyInParent -->
         <version>${revision}</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <artifactId>keycloak-regex-mapper</artifactId>
+    <artifactId>keycloak-regex-mappers</artifactId>
 
     <version>${revision}</version>
     <packaging>jar</packaging>
 
     <build>
         <finalName>${project.artifactId}</finalName>
-<!--        <pluginManagement>
-            <plugins>
-                <plugin>
-                    <groupId>org.wildfly.plugins</groupId>
-                    <artifactId>wildfly-maven-plugin</artifactId>
-                    <version>2.1.0.Beta1</version>
-                    <configuration>
-                        <skip>false</skip>
-                    </configuration>
-                </plugin>
-            </plugins>
-        </pluginManagement>-->
         <plugins>
             <plugin>
                 <groupId>org.wildfly.plugins</groupId>

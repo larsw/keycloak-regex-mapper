@@ -3,7 +3,7 @@
 
     <name>Keycloak plugins</name>
     <modelVersion>4.0.0</modelVersion>
-    <artifactId>keycloak-regex-mapper-parent</artifactId>
+    <artifactId>keycloak-regex-mappers-parent</artifactId>
     <groupId>org.sral</groupId>
     <version>${revision}</version>
     <packaging>pom</packaging>
@@ -94,7 +94,7 @@
     </dependencyManagement>
 
     <modules>
-        <module>protocol-mapper</module>
+        <module>protocol-mappers</module>
         <module>data-setup</module>
     </modules>
 

@@ -101,5 +101,4 @@ public class RegexMapperTest {
         result.put(RegexMapper.MATCH_GROUP_NUMBER_OR_NAME_PROPERTY, "1");
         return result;
     }
-
 }
