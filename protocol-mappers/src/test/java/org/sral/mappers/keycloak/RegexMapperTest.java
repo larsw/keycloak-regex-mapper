@@ -56,6 +56,7 @@ public class RegexMapperTest {
                         RegexMapper.FULL_PATH_PROPERTY,
                         RegexMapper.REGEX_PATTERN_PROPERTY,
                         RegexMapper.MATCH_GROUP_NUMBER_OR_NAME_PROPERTY,
+                        RegexMapper.MULTI_VALUE_PROPERTY,
                         RegexMapper.MERGE_CLAIMS_PROPERTY,
                         OIDCAttributeMapperHelper.INCLUDE_IN_ID_TOKEN,
                         OIDCAttributeMapperHelper.INCLUDE_IN_ACCESS_TOKEN,

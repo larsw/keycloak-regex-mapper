@@ -10,6 +10,7 @@ import org.keycloak.protocol.oidc.mappers.OIDCAttributeMapperHelper;
 import org.keycloak.protocol.oidc.mappers.OIDCIDTokenMapper;
 import org.keycloak.protocol.oidc.mappers.UserInfoTokenMapper;
 import org.keycloak.provider.ProviderConfigProperty;
+import org.keycloak.provider.ProviderConfigurationBuilder;
 import org.keycloak.representations.IDToken;
 
 import java.util.ArrayList;
@@ -34,52 +35,70 @@ public class RegexMapper extends AbstractOIDCProtocolMapper implements OIDCAcces
     public static final String FULL_PATH_PROPERTY = "full.path";
     public static final String REGEX_PATTERN_PROPERTY = "regex.pattern";
     public static final String MATCH_GROUP_NUMBER_OR_NAME_PROPERTY = "match.group.number.or.name";
+    public static final String MULTI_VALUE_PROPERTY = "multi.value";
 
     static {
         OIDCAttributeMapperHelper.addTokenClaimNameConfig(configProperties);
 
-        var targetProperty = new ProviderConfigProperty();
-        targetProperty.setName(TARGET_PROPERTY);
-        targetProperty.setLabel("Match target");
-        targetProperty.setHelpText("Only Groups supported at the moment.");
-        targetProperty.setType(ProviderConfigProperty.LIST_TYPE);
-        targetProperty.setOptions(asList("Groups")); // TODO , "Roles", "User attributes"));
-        targetProperty.setDefaultValue("Groups");
-        configProperties.add(targetProperty);
+        configProperties.addAll(
+                ProviderConfigurationBuilder.create()
+                .property()
+                .name(TARGET_PROPERTY)
+                .label("Match Target")
+                .type(ProviderConfigProperty.LIST_TYPE)
+                .helpText("Only Groups supported at the moment.")
+                .defaultValue("Groups")
+                .add()
 
-        var fullGroupNameProperty = new ProviderConfigProperty();
-        fullGroupNameProperty.setName(FULL_PATH_PROPERTY);
-        fullGroupNameProperty.setLabel("Match against full group path or not");
-        fullGroupNameProperty.setType(ProviderConfigProperty.BOOLEAN_TYPE);
-        fullGroupNameProperty.setDefaultValue("true");
-        fullGroupNameProperty.setHelpText("Include full path to group i.e. /top/level1/level2, false will just specify the group name");
-        configProperties.add(fullGroupNameProperty);
+                .property()
+                .name(FULL_PATH_PROPERTY)
+                .label("Match against full group path or not")
+                .type(ProviderConfigProperty.BOOLEAN_TYPE)
+                .helpText("Include full path to group i.e. /top/level1/level2, false will just specify the group name")
+                .defaultValue("true")
+                .add()
 
-        var patternProperty = new ProviderConfigProperty();
-        patternProperty.setName(REGEX_PATTERN_PROPERTY);
-        patternProperty.setLabel("Regex pattern");
-        patternProperty.setType(ProviderConfigProperty.STRING_TYPE);
-        patternProperty.setDefaultValue("(.*)");
-        patternProperty.setHelpText("Regular expression with one or more groups");
-        configProperties.add(patternProperty);
+                .property()
+                .name(REGEX_PATTERN_PROPERTY)
+                .label("Match pattern")
+                .type(ProviderConfigProperty.STRING_TYPE)
+                .helpText("Regular expression with one or more groups")
+                .defaultValue("(.*)")
+                .add()
 
-        var matchGroupNumberOrNameProperty = new ProviderConfigProperty();
-        matchGroupNumberOrNameProperty.setName(MATCH_GROUP_NUMBER_OR_NAME_PROPERTY);
-        matchGroupNumberOrNameProperty.setLabel("Match group number/name");
-        matchGroupNumberOrNameProperty.setType(ProviderConfigProperty.STRING_TYPE);
-        matchGroupNumberOrNameProperty.setDefaultValue("1");
-        configProperties.add(matchGroupNumberOrNameProperty);
+                .property()
+                .name(MATCH_GROUP_NUMBER_OR_NAME_PROPERTY)
+                .label("Match group number/name")
+                .type(ProviderConfigProperty.STRING_TYPE)
+                .helpText("The match group index or name to use as the claim value")
+                .defaultValue("1")
+                .add()
 
-        var mergeClaimsProperty = new ProviderConfigProperty();
-        mergeClaimsProperty.setName(MERGE_CLAIMS_PROPERTY);
-        mergeClaimsProperty.setLabel("Merge claims");
-        mergeClaimsProperty.setHelpText("If the claim already exists, merge the new values into it");
-        mergeClaimsProperty.setDefaultValue("false");
-        mergeClaimsProperty.setType(ProviderConfigProperty.BOOLEAN_TYPE);
-        configProperties.add(mergeClaimsProperty);
+                .property()
+                .name(MULTI_VALUE_PROPERTY)
+                .label("Multi-valued")
+                .type(ProviderConfigProperty.BOOLEAN_TYPE)
+                .helpText("If set, all matching groups > 0 will be inserted as the claim value (list)")
+                .defaultValue("false")
+                .add()
+
+                .property()
+                .name(MERGE_CLAIMS_PROPERTY)
+                .label("Merge claims")
+                .type(ProviderConfigProperty.BOOLEAN_TYPE)
+                .helpText("If the claim already exists, merge the new values into it")
+                .defaultValue("false")
+                .add()
+
+                .build());
 
         // Add toggles for include in (ID Token, access token and User Info endpoint
         OIDCAttributeMapperHelper.addIncludeInTokensConfig(configProperties, RegexMapper.class);
+    }
+
+    @Override
+    public String getId() {
+        return PROVIDER_ID;
     }
 
     @Override
@@ -103,17 +122,16 @@ public class RegexMapper extends AbstractOIDCProtocolMapper implements OIDCAcces
         return configProperties;
     }
 
-    @Override
-    public String getId() {
-        return PROVIDER_ID;
-    }
-
     public static boolean useFullPath(ProtocolMapperModel mapperModel) {
         return "true".equals(mapperModel.getConfig().get(FULL_PATH_PROPERTY));
     }
 
     public static boolean mergeClaimValues(ProtocolMapperModel mapperModel) {
         return "true".equals(mapperModel.getConfig().get(MERGE_CLAIMS_PROPERTY));
+    }
+
+    public static boolean multiValued(ProtocolMapperModel mapperModel) {
+        return "true".equals(mapperModel.getConfig().get(MULTI_VALUE_PROPERTY));
     }
 
     @Override
@@ -129,9 +147,11 @@ public class RegexMapper extends AbstractOIDCProtocolMapper implements OIDCAcces
             throw new ProtocolMapperConfigException("Invalid regular expression pattern", "{0}", ex);
         }
 
-        var matchGroupNumberOrName = mapperModel.getConfig().get(MATCH_GROUP_NUMBER_OR_NAME_PROPERTY);
-        if (matchGroupNumberOrName == null || matchGroupNumberOrName.isEmpty())
-            throw new ProtocolMapperConfigException("Match group number or name is not defined", "{0}");
+        if (multiValued(mapperModel) == false) {
+            var matchGroupNumberOrName = mapperModel.getConfig().get(MATCH_GROUP_NUMBER_OR_NAME_PROPERTY);
+            if (matchGroupNumberOrName == null || matchGroupNumberOrName.isEmpty())
+                throw new ProtocolMapperConfigException("Match group number or name is not defined", "{0}");
+        }
     }
 
     private Pattern constructPattern(ProtocolMapperModel mappingModel) {
@@ -149,16 +169,21 @@ public class RegexMapper extends AbstractOIDCProtocolMapper implements OIDCAcces
 
         var pattern = constructPattern(mapperModel);
 
-        var matchGroupNumberOrName = mapperModel.getConfig().get(MATCH_GROUP_NUMBER_OR_NAME_PROPERTY);
-        var matchGroupNumber = -1;
-        var matchGroupName = "";
-        try {
-            matchGroupNumber = Integer.parseInt(matchGroupNumberOrName);
-        } catch (NumberFormatException ignored) {
-            matchGroupName = matchGroupNumberOrName;
-        }
+        List<String> values;
 
-        var values = getFilteredGroupMembershipsAsValues(mapperModel, userSession, matchGroupNumber, matchGroupName, pattern);
+//        if (multiValued(mapperModel)) {
+//            values = getFilteredGroupMembershipsAsValues(mapperModel, userSession, pattern);
+//        } else {
+            var matchGroupNumberOrName = mapperModel.getConfig().get(MATCH_GROUP_NUMBER_OR_NAME_PROPERTY);
+            var matchGroupNumber = -1;
+            var matchGroupName = "";
+            try {
+                matchGroupNumber = Integer.parseInt(matchGroupNumberOrName);
+            } catch (NumberFormatException ignored) {
+                matchGroupName = matchGroupNumberOrName;
+            }        
+            values = getFilteredGroupMembershipsAsValues(mapperModel, userSession, matchGroupNumber, matchGroupName, pattern);
+//        }
 
         if (mergeClaimValues(mapperModel)) {
             var existingClaim = token.getOtherClaims().get(targetClaimName);
@@ -168,13 +193,41 @@ public class RegexMapper extends AbstractOIDCProtocolMapper implements OIDCAcces
                 } else if (existingClaim instanceof List<?>) {
                     values.addAll((List<String>)existingClaim);
                 } else {
-                    // wut
+                    // wut - TODO
                 }
             }
         }
 
         token.getOtherClaims().put(targetClaimName, values);
     }
+
+    private List<String> getFilteredGroupMembershipsAsValues(ProtocolMapperModel mappingModel, UserSessionModel userSession, Pattern pattern) {
+        var fullPath = useFullPath(mappingModel);
+        var multiValued = multiValued(mappingModel);
+
+        var stream = userSession.getUser()
+                .getGroups()
+                .stream()
+                .map(x -> fullPath ? pattern.matcher(ModelToRepresentation.buildGroupPath(x)) : pattern.matcher(x.getName()));
+
+        if (multiValued) {
+            return new ArrayList<String>();                    
+            // TODO
+        } else {
+            return stream.filter(Matcher::matches)
+               .flatMap(matcher -> {
+                List<String> values = new ArrayList<>();
+                while (matcher.find()) {
+                   for (var i = 1; i < matcher.groupCount(); i++) {
+                       values.add(matcher.group(i));
+                   }
+                }
+                return values.stream();
+            })
+           .distinct()
+           .collect(Collectors.toList());
+        }
+    }    
 
     private List<String> getFilteredGroupMembershipsAsValues(ProtocolMapperModel mappingModel, UserSessionModel userSession, int matchGroupNumber, String matchGroupName, Pattern pattern) {
         boolean fullPath = useFullPath(mappingModel);
