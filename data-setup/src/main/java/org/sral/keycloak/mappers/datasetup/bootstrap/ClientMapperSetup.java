@@ -1,9 +1,9 @@
-package org.sral.mappers.keycloak.datasetup.bootstrap;
+package org.sral.keycloak.mappers.datasetup.bootstrap;
 
-import org.sral.mappers.keycloak.RegexMapper;
+import org.sral.keycloak.mappers.RegexMapper;
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.resource.ClientResource;
-import org.keycloak.protocol.oidc.mappers.GroupMembershipMapper;
+//import org.keycloak.protocol.oidc.mappers.GroupMembershipMapper;
 import org.keycloak.protocol.oidc.mappers.OIDCAttributeMapperHelper;
 import org.keycloak.representations.idm.ProtocolMapperRepresentation;
 
@@ -21,32 +21,31 @@ public class ClientMapperSetup {
 
     public void execute() {
         final ClientResource client = this.keycloak.realm(RealmSetup.REALM).clients().get(RealmSetup.CLIENT);
-        client.getProtocolMappers().createMapper(createGroupMapper());
         client.getProtocolMappers().createMapper(createHelloWordMapper());
     }
 
-    private ProtocolMapperRepresentation createGroupMapper() {
-        ProtocolMapperRepresentation protocolMapperRepresentation = new ProtocolMapperRepresentation();
-        protocolMapperRepresentation.setProtocolMapper(GroupMembershipMapper.PROVIDER_ID);
-        protocolMapperRepresentation.setProtocol(PROTOCOL);
-        protocolMapperRepresentation.setName("Group mapper");
-        Map<String, String> config = new HashMap<>();
-        putAccessTokenClaim(config);
-        // the name of the property we got from the class GroupMembershipMapper
-        config.put("full.path", "true");
-        config.put(OIDCAttributeMapperHelper.TOKEN_CLAIM_NAME, "groups");
-        protocolMapperRepresentation.setConfig(config);
-        return protocolMapperRepresentation;
-    }
+//    private ProtocolMapperRepresentation createGroupMapper() {
+//        ProtocolMapperRepresentation protocolMapperRepresentation = new ProtocolMapperRepresentation();
+//        protocolMapperRepresentation.setProtocolMapper(GroupMembershipMapper.PROVIDER_ID);
+//        protocolMapperRepresentation.setProtocol(PROTOCOL);
+//        protocolMapperRepresentation.setName("Group mapper");
+//        Map<String, String> config = new HashMap<>();
+//        putAccessTokenClaim(config);
+//        // the name of the property we got from the class GroupMembershipMapper
+//        config.put("full.path", "true");
+//        config.put(OIDCAttributeMapperHelper.TOKEN_CLAIM_NAME, "groups");
+//        protocolMapperRepresentation.setConfig(config);
+//        return protocolMapperRepresentation;
+//    }
 
     private ProtocolMapperRepresentation createHelloWordMapper() {
         ProtocolMapperRepresentation protocolMapperRepresentation = new ProtocolMapperRepresentation();
         protocolMapperRepresentation.setProtocolMapper(RegexMapper.PROVIDER_ID);
         protocolMapperRepresentation.setProtocol(PROTOCOL);
-        protocolMapperRepresentation.setName("Hello world mapper");
+        protocolMapperRepresentation.setName("Authorized compartments");
         Map<String, String> config = new HashMap<>();
         putAccessTokenClaim(config);
-        config.put(OIDCAttributeMapperHelper.TOKEN_CLAIM_NAME, "example.message");
+        config.put(OIDCAttributeMapperHelper.TOKEN_CLAIM_NAME, "azc");
         protocolMapperRepresentation.setConfig(config);
         return protocolMapperRepresentation;
     }

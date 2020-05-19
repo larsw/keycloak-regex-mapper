@@ -1,8 +1,7 @@
-package org.sral.mappers.keycloak;
+package org.sral.keycloak.mappers;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import org.keycloak.models.*;
-import org.keycloak.models.utils.ModelToRepresentation;
 import org.keycloak.protocol.ProtocolMapperConfigException;
 import org.keycloak.protocol.oidc.mappers.AbstractOIDCProtocolMapper;
 import org.keycloak.protocol.oidc.mappers.OIDCAccessTokenMapper;
@@ -20,12 +19,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
-
-import static java.util.Arrays.asList;
 
 /**
  *  @author <a href="mailto:lars@nospam.sral.org">Lars Wilhelmsen</a>

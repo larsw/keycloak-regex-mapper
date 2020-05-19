@@ -1,9 +1,9 @@
-package org.sral.mappers.keycloak.mapper;
+package org.sral.keycloak.mappers.mapper;
 
 import org.junit.Test;
 import org.keycloak.models.UserSessionModel;
 import org.mockito.Mockito;
-import org.sral.mappers.keycloak.GWTFixture;
+import org.sral.keycloak.mappers.GWTFixture;
 
 public class WhenUsingPatternAndGroupNumber extends GWTFixture<UserSessionModel> {
 

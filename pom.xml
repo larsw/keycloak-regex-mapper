@@ -1,7 +1,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
-    <name>Keycloak plugins</name>
+    <name>Keycloak protocol mapper plugins</name>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>keycloak-regex-mappers-parent</artifactId>
     <groupId>org.sral</groupId>
@@ -38,6 +38,20 @@
                     <configuration>
                         <skip>false</skip>
                     </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-gpg-plugin</artifactId>
+                    <version>1.6</version>
+                    <executions>
+                        <execution>
+                            <id>sign-artifacts</id>
+                            <phase>verify</phase>
+                            <goals>
+                                <goal>sign</goal>
+                            </goals>
+                        </execution>
+                    </executions>
                 </plugin>
             </plugins>
         </pluginManagement>
@@ -97,5 +111,4 @@
         <module>protocol-mappers</module>
         <module>data-setup</module>
     </modules>
-
 </project>

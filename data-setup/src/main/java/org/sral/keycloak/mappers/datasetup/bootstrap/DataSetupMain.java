@@ -1,4 +1,4 @@
-package org.sral.mappers.keycloak.datasetup.bootstrap;
+package org.sral.keycloak.mappers.datasetup.bootstrap;
 
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.KeycloakBuilder;
@@ -10,7 +10,7 @@ public class DataSetupMain {
         new RealmSetup(keycloakClient).execute();
         new UserSetup(keycloakClient).execute();
         new ClientMapperSetup(keycloakClient).execute();
-        System.out.println("The data has been imported");
+        System.out.println("The realm has been initialized.");
     }
 
     private static Keycloak createKeycloakClient() {

@@ -1,4 +1,4 @@
-package org.sral.mappers.keycloak.datasetup.bootstrap;
+package org.sral.keycloak.mappers.datasetup.bootstrap;
 
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.resource.UsersResource;
@@ -10,17 +10,18 @@ import java.util.Collections;
 
 public class UserSetup {
 
-    private static String PASSWORD = "password";
+    private static final String PASSWORD = "Passw0rd!";
 
     private final UsersResource users;
 
     public UserSetup(Keycloak keycloak) {
-        this.users = keycloak.realm(RealmSetup.REALM).users();
+        this.users = keycloak.realm(RealmSetup.REALM)
+                             .users();
     }
 
     public void execute() {
-        createUser("mmustermann", "Max", "Mustermann");
-        createUser("jdoe", "John", "Doe");
+        createUser("dduck", "Donald", "Duck");
+        createUser("mmouse", "Mickey", "Mouse");
     }
 
     public String createUser(String name, String firstName, String lastName) {
@@ -30,10 +31,9 @@ public class UserSetup {
         user.setLastName(lastName);
         user.setEnabled(true);
         user.setCredentials(Collections.singletonList(createPassword(PASSWORD)));
-        Response response = users.create(user);
+        var response = users.create(user);
         return getCreatedId(response);
     }
-
 
     private CredentialRepresentation createPassword(final String password) {
         CredentialRepresentation passwordCred = new CredentialRepresentation();
@@ -44,6 +44,8 @@ public class UserSetup {
     }
 
     private String getCreatedId(Response response) {
-        return response.getLocation().toString().replaceAll(".*/", "");
+        return response.getLocation()
+                .toString()
+                .replaceAll(".*/", "");
     }
 }

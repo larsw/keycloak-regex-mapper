@@ -1,4 +1,4 @@
-package org.sral.mappers.keycloak.datasetup.bootstrap;
+package org.sral.keycloak.mappers.datasetup.bootstrap;
 
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.representations.idm.ClientRepresentation;

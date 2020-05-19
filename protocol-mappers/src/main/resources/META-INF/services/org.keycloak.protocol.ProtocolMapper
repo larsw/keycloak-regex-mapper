@@ -1,2 +1,2 @@
-org.sral.mappers.keycloak.RegexMapper
-org.sral.mappers.keycloak.RegexReplaceMapper
+org.sral.keycloak.mappers.RegexMapper
+org.sral.keycloak.mappers.RegexReplaceMapper

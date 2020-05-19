@@ -1,4 +1,4 @@
-package org.sral.mappers.keycloak;
+package org.sral.keycloak.mappers;
 
 import org.junit.Test;
 import org.keycloak.models.GroupModel;
