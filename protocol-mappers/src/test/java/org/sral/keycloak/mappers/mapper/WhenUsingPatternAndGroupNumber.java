@@ -14,7 +14,6 @@ public class WhenUsingPatternAndGroupNumber extends GWTFixture<UserSessionModel>
 
     @Override
     protected void When() {
-
     }
 
     @Test

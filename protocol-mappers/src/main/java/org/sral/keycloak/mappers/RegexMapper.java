@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import static java.util.Arrays.asList;
 
 /*
  *  @author <a href="mailto:lars@nospam.sral.org">Lars Wilhelmsen</a>
@@ -44,12 +45,13 @@ public class RegexMapper extends AbstractOIDCProtocolMapper implements OIDCAcces
                 .label("Match Target")
                 .type(ProviderConfigProperty.LIST_TYPE)
                 .helpText("Only Groups supported at the moment.")
+                        .options(asList("Groups"))
                 .defaultValue("Groups")
                 .add()
 
                 .property()
                 .name(FULL_PATH_PROPERTY)
-                .label("Match against full group path or not")
+                .label("Full path")
                 .type(ProviderConfigProperty.BOOLEAN_TYPE)
                 .helpText("Include full path to group i.e. /top/level1/level2, false will just specify the group name")
                 .defaultValue("true")

@@ -17,47 +17,44 @@ import java.util.stream.Collectors;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
-public class RegexMapperTest {
-
+public class RegexReplaceMapperTest {
     static final String CLAIM_NAME = "azc";
 
     @Test
     public void shouldTokenMapperDisplayCategory() {
         final String tokenMapperDisplayCategory = new FullNameMapper().getDisplayCategory();
-        assertThat(new RegexMapper().getDisplayCategory()).isEqualTo(tokenMapperDisplayCategory);
+        assertThat(new RegexReplaceMapper().getDisplayCategory()).isEqualTo(tokenMapperDisplayCategory);
     }
 
     @Test
     public void shouldHaveDisplayType() {
-        assertThat(new RegexMapper().getDisplayType()).isNotBlank();
+        assertThat(new RegexReplaceMapper().getDisplayType()).isNotBlank();
     }
 
     @Test
     public void shouldHaveHelpText() {
-        assertThat(new RegexMapper().getHelpText()).isNotBlank();
+        assertThat(new RegexReplaceMapper().getHelpText()).isNotBlank();
     }
 
     @Test
     public void shouldHaveIdId() {
-        assertThat(new RegexMapper().getId()).isNotBlank();
+        assertThat(new RegexReplaceMapper().getId()).isNotBlank();
     }
 
     @Test
+    public void shouldHaveAVeryLowPriority() { assertThat(new RegexReplaceMapper().getPriority()).isEqualTo(10000); }
+
+    @Test
     public void shouldHaveProperties() {
-        final List<String> configPropertyNames = new RegexMapper()
+        final List<String> configPropertyNames = new RegexReplaceMapper()
                 .getConfigProperties()
                 .stream()
                 .map(ProviderConfigProperty::getName)
                 .collect(Collectors.toList());
         assertThat(configPropertyNames)
                 .containsExactly(
-                        OIDCAttributeMapperHelper.TOKEN_CLAIM_NAME,
-                        RegexMapper.TARGET_PROPERTY,
-                        RegexMapper.FULL_PATH_PROPERTY,
-                        RegexMapper.REGEX_PATTERN_PROPERTY,
-                        RegexMapper.MATCH_GROUP_NUMBER_OR_NAME_PROPERTY,
-                        RegexMapper.MULTI_VALUE_PROPERTY,
-                        RegexMapper.MERGE_CLAIMS_PROPERTY,
+                        RegexReplaceMapper.TARGET_CLAIMS_PROPERTY,
+                        RegexReplaceMapper.REPLACEMENT_MAP_PROPERTY,
                         OIDCAttributeMapperHelper.INCLUDE_IN_ID_TOKEN,
                         OIDCAttributeMapperHelper.INCLUDE_IN_ACCESS_TOKEN,
                         OIDCAttributeMapperHelper.INCLUDE_IN_USERINFO);
@@ -65,14 +62,8 @@ public class RegexMapperTest {
 
     @Test
     public void shouldAddClaim() {
+        var userModel = given();
 
-        final UserSessionModel session = given();
-
-        final AccessToken accessToken = transformAccessToken(session);
-        final List<String> vals = new LinkedList<>() {{
-            add("myGroup");
-        }};
-        assertThat(accessToken.getOtherClaims().get(CLAIM_NAME)).isEqualTo(vals);
     }
 
     private UserSessionModel given() {
@@ -90,16 +81,20 @@ public class RegexMapperTest {
     private AccessToken transformAccessToken(UserSessionModel userSessionModel) {
         final ProtocolMapperModel mappingModel = new ProtocolMapperModel();
         mappingModel.setConfig(createConfig());
-        return new RegexMapper().transformAccessToken(new AccessToken(), mappingModel, null, userSessionModel, null);
+        return new RegexReplaceMapper().transformAccessToken(new AccessToken(), mappingModel, null, userSessionModel, null);
     }
 
     private Map<String, String> createConfig() {
         final Map<String, String> result = new HashMap<>();
-        result.put("access.token.claim", "true");
-        result.put("claim.name", CLAIM_NAME);
+
+        final Map<String, String> replacements = new HashMap<>();
+
+        result.put(RegexReplaceMapper.TARGET_CLAIMS_PROPERTY, "azc");
+        //result.put(RegexReplaceMapper.REPLACEMENT_MAP_PROPERTY, replacements);
         result.put(RegexMapper.REGEX_PATTERN_PROPERTY, "(.*)");
         result.put(RegexMapper.FULL_PATH_PROPERTY, "false");
         result.put(RegexMapper.MATCH_GROUP_NUMBER_OR_NAME_PROPERTY, "1");
         return result;
     }
+
 }
