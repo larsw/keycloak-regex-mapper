@@ -1,0 +1,13 @@
+<module xmlns="urn:jboss:module:1.9" name="org.sral.keycloak.mappers.RegexMapper">
+  <resources>
+    <resource-root path="keycloak-regex-mapper.jar"/>
+  </resources>
+  <dependencies>
+    <!-- List the modules / jar files we depend on. That are the same we defined in the pom.xml -->
+    <module name="org.keycloak.keycloak-core"/>
+	<module name="org.keycloak.keycloak-server-spi"/>
+    <module name="org.keycloak.keycloak-server-spi-private"/>
+    <module name="org.keycloak.keycloak-services"/>
+    <module name="javax.ws.rs.api"/>
+  </dependencies>
+</module>

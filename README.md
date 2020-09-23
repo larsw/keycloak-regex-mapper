@@ -6,7 +6,7 @@ TODO Introduction
 
 ## Entrypoints into this project
 1. [data-setup](data-setup): Project to configure [Keycloak](https://www.keycloak.org/) via its REST API. Configures a realm so that it uses the example protocol mapper. Contains a [main method](data-setup/src/main/java/hamburg/schwartau/datasetup/bootstrap/DataSetupMain.java) which can be executed against a running [Keycloak](https://www.keycloak.org/) instance.
-2. [protocol-mapper](protocol-mapper): Contains the protocol mapper code. The resulting jar file will be deployed to [Keycloak](https://www.keycloak.org/). I tried to explain things needed in comments in the [protocol-mapper project](protocol-mapper)
+2. [protocol-mapper](protocol-mappers): Contains the protocol mapper code. The resulting jar file will be deployed to [Keycloak](https://www.keycloak.org/). I tried to explain things needed in comments in the [protocol-mappers project](protocol-mappers)
 3. [Dockerfile](Dockerfile): Is based upon the official [Keycloak docker image](https://hub.docker.com/r/jboss/keycloak/). Adds the jar file containing the [protocol mapper](protocol-mapper/src/main/java/hamburg/schwartau/HelloWorldMapper.java), created by the [protocol-mapper project](protocol-mapper), to the keycloak instance.                                   
 
 ## Try it out
@@ -28,7 +28,7 @@ using our scripts, because they expect a fresh keycloak database.
    This programs sets up an new example realm which uses our Hello world token mapper.
    If it has been executed, you should see the message `The data has been imported` in the console.
    Furthermore if you open the [Keycloak admin console](http://localhost:11080/auth/admin/) you should
-   see the example realm. For this realm the [hello world mapper](protocol-mapper/src/main/java/hamburg/schwartau/HelloWorldMapper.java) is configured: ![Keycloak screenshot](images/keycloak_mapper.png?raw=true "Keycloak screenshot")          
+   see the example realm. For this realm the [hello world mapper](protocol-mappers/src/main/java/hamburg/schwartau/HelloWorldMapper.java) is configured: ![Keycloak screenshot](images/keycloak_mapper.png?raw=true "Keycloak screenshot")          
 
 Now [Keycloak](https://www.keycloak.org/) is configured. As a next step we want to check the token.   
 
@@ -96,7 +96,7 @@ get something like the following:
       }
     }
 
-The value auf our own [Hello World Token mapper](protocol-mapper/src/main/java/hamburg/schwartau/HelloWorldMapper.java) got added to the token because
+The value auf our own [Hello World Token mapper](protocol-mappers/src/main/java/hamburg/schwartau/HelloWorldMapper.java) got added to the token because
 the message 'hello world' appears in the example.message field.
 
 ## Acknowledgements

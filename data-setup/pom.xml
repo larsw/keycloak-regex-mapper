@@ -2,7 +2,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <parent>
         <groupId>org.sral</groupId>
-        <artifactId>keycloak-regex-mapper-parent</artifactId>
+        <artifactId>keycloak-regex-mappers-parent</artifactId>
         <!--suppress MavenPropertyInParent -->
         <version>${revision}</version>
         <relativePath>../pom.xml</relativePath>
@@ -12,9 +12,24 @@
     <description/>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>keycloak-custom-protocol-mapper-example-data-setup</artifactId>
+    <artifactId>keycloak-regex-mappers-data-setup</artifactId>
     <version>${revision}</version>
     <packaging>jar</packaging>
+
+    <build>
+        <plugins>
+            <!-- The following plugin with skip = true is needed to ensure that the
+                 integration test module will not be published to the OSSRH -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-deploy-plugin</artifactId>
+                <version>2.7</version>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 
     <dependencies>
         <dependency>
@@ -39,7 +54,7 @@
         </dependency>
         <dependency>
             <groupId>org.sral</groupId>
-            <artifactId>keycloak-regex-mapper</artifactId>
+            <artifactId>keycloak-regex-mappers</artifactId>
             <version>${revision}</version>
         </dependency>
     </dependencies>
